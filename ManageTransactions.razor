@@ -1,0 +1,199 @@
+﻿@page "/transactions"
+@layout MainLayout
+@inject NavigationManager _navigation
+@inject HttpClient HttpHandler
+@inject UserDetail _RegisterLogic
+@inject DatabaseAccountrix _DatabaseLogic
+@using System.Threading.Tasks
+
+<div class="transaction-page">
+    <div class="add-transactions">
+
+        <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 70%; width: 82vw; background-color: #ffffff; display: flex; flex-direction: row; align-items: center; justify-content: space-evenly; border-radius: 25px;">
+            <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 100%; width: 60em; background-color: #1e1e2d; display: flex; flex-direction: column; align-items: center; border-radius: 25px;">
+                
+                <div>
+                    <MudChart ChartType="ChartType.Line" ChartSeries="@Series" @bind-SelectedIndex="Index" XAxisLabels="@XAxisLabels" Width="100%" Height="400px" ChartOptions="@Options" />
+                
+                    <MudGrid>
+                        <MudItem xs="6">
+                            <MudSlider @bind-Value="Options.LineStrokeWidth" Min="1" Max="10" Color="Color.Info">Line Width: @Options.LineStrokeWidth.ToString()</MudSlider>
+                        </MudItem>
+
+                        <MudItem xs="6">
+                            <MudSlider @bind-Value="Options.LineStrokeWidth" Min="1" Max="10" Color="Color.Info">Line Width: @Options.LineStrokeWidth.ToString()</MudSlider>
+                        </MudItem>
+                    </MudGrid>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 20em; width: 20em; background-color: #1e1e2d; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border-radius: 25px;">
+                <div>
+                    <MudTextField Class="transaction-customtextfield" @bind-Value="_transaction.amount" Label="Amount" Variant="Variant.Text" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Filled.AttachMoney" AdornmentColor="Color.Warning" />
+                </div>
+                <div>
+                    <MudRadioGroup @bind-Value="@radiobtn_val">
+                        <MudRadio Class="radio-label" Value="1" Color="Color.Tertiary" Size="Size.Medium">Income</MudRadio>
+                        <MudRadio Class="radio-label" Value="2" Color="Color.Secondary" Size="Size.Medium">Expense</MudRadio>
+                    </MudRadioGroup>
+                </div>
+                <div>
+                    <MudTextField Class="transaction-customtextfield" @bind-Value="_transaction.TransactionReason" Label="Transaction Reason" Variant="Variant.Text"></MudTextField>
+                </div>
+                <div>
+                    <MudButton OnClick="async() => await SaveData()" Variant="Variant.Filled" Size="Size.Large" Color="Color.Tertiary" StartIcon="@Icons.Material.Filled.Save">Add Transaction</MudButton>
+                </div>
+            </MudPaper>
+
+            <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 20em; width: 20em; background-color: #1e1e2d; display: flex; flex-direction: column; align-items: center; justify-content: space-between; border-radius: 25px">
+                <div>
+                    <MudTextField Class="transaction-customtextfield" @bind-Value="transID_to_del" Label="Enter transaction ID" Variant="Variant.Text"></MudTextField>
+                </div>
+                <div>
+                    <MudButton OnClick="async() => await DeleteData(transID_to_del)" Variant="Variant.Filled" Size="Size.Large" Color="Color.Error" StartIcon="@Icons.Material.Filled.Save">Delete Transaction</MudButton>
+                </div>
+            </MudPaper>
+        </MudPaper>
+
+
+        <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 70%; width: 82vw; background-color: #ffffff; display: flex; flex-direction: row; align-items: center; justify-content: space-between; border-radius: 25px;">
+            <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 100%; width: 100%; background-color: #0055BF; display: flex; flex-direction: column; align-items: flex-start; border-radius: 25px; color: white;">
+                <p>Total Transactions</p>
+                <h1>$0</h1>
+            </MudPaper>
+
+            <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 100%; width: 100%; background-color: #1ec8a5; display: flex; flex-direction: column; align-items: flex-start; border-radius: 25px; color: white;">
+                <p>Total Income</p>
+                <h1>$0</h1>
+            </MudPaper>
+
+            <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 100%; width: 100%; background-color: #f44336; display: flex; flex-direction: column; align-items: flex-start; border-radius: 25px; color: white;">
+                <p>Total Expenses</p>
+                <h1>$0</h1>
+            </MudPaper>
+
+            <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 100%; width: 100%; background-color: #fea443; display: flex; flex-direction: column; align-items: flex-start; border-radius: 25px; color: white;">
+                <p>Total Revenue</p>
+                <h1>$0</h1>
+            </MudPaper>
+        </MudPaper>
+
+
+        <MudPaper Class="pa-8 ma-2" Outlined="true" Style="height: 100%; width: 82vw; background-color: #ffffff; display: flex; flex-direction: row; align-items: center; justify-content: space-evenly; border-radius: 25px;">
+            <h1>For Transaction Page</h1>
+        </MudPaper>
+    </div>
+</div>
+
+
+
+<div class="transaction-page">
+
+    <div class="delete-list-transaction">
+        <MudDataGrid Items="@datalist" Filterable="false" SortMode="SortMode.None" Groupable="false">
+            <Columns>
+                <PropertyColumn Property="context => context.amount" Title="Amount" Format="C" />
+                <PropertyColumn Property="context => context.TransactionDate" Title="Date" />
+                <PropertyColumn Property="context => context.TransactionReason" Title="Reason" />
+                <PropertyColumn Property="context => context.transaction_id" Title="Transaction ID" />
+            </Columns>
+        </MudDataGrid>
+    </div>
+</div>
+
+
+
+
+
+
+
+
+
+@code {
+    private IQueryable<UserTransaction> datalist = null;
+    DatabaseAccountrix _databaseLogic = new DatabaseAccountrix();
+    UserTransaction _transaction = new UserTransaction();
+    TransactionList transactions = new TransactionList();
+
+    private string? transID_to_del { get; set; }
+    
+    private int radiobtn_val { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadData();
+    }
+
+    private async Task LoadData()
+    {
+        try
+        {
+            List<UserTransaction> ListOfTransactions = await HttpHandler.GetFromJsonAsync<List<UserTransaction>>("/transactions");
+            _databaseLogic.tmp_trans.Transactions = ListOfTransactions;
+            datalist = ListOfTransactions.AsQueryable();
+
+            _databaseLogic.tmp_trans.DisplayTransactionHistory();
+
+        }
+        catch (Exception)
+        {
+            Console.WriteLine("No transactions");
+        }
+
+    }
+
+    private async Task SaveData()
+    {
+        if (radiobtn_val == 1)
+        {
+            _transaction.amount = _transaction.amount;
+        }
+        else if (radiobtn_val == 2)
+        {
+            _transaction.amount = _transaction.amount * -1;
+        }
+        UserTransaction tmp_transaction = new UserTransaction(_transaction.amount, _transaction.TransactionReason, DateTime.Now);
+        await HttpHandler.PostAsJsonAsync("/transactions", tmp_transaction);
+
+        Console.WriteLine("Transaction saved successfully Transaction ID: {0}", tmp_transaction.transaction_id);
+        _transaction.amount = 0;
+        _transaction.TransactionReason = "";
+        radiobtn_val = 0;
+        StateHasChanged();
+        await LoadData();
+    }
+
+    private async Task DeleteData(string transaction_id)
+    {
+        Console.WriteLine("ID contained in button: {0}", transaction_id);
+        var response = await HttpHandler.PostAsJsonAsync($"/transactions/{transaction_id}", transaction_id);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Transaction has successfully been removed!");
+            await LoadData();
+            StateHasChanged();
+        }
+        else
+        {
+            Console.WriteLine("Failed to delete transaction. Status Code: " + response.StatusCode);
+        }
+    }
+
+
+    //For the graph
+
+    private int Index = -1; //default value cannot be 0 -> first selectedindex is 0.
+
+    public ChartOptions Options = new ChartOptions();
+
+
+    public List<ChartSeries> Series = new List<ChartSeries>()
+{
+    new ChartSeries() { Name = "Fossil", Data = new double[] { 90, 79, 72, 69, 62, 62, 55, 65, 70 } },
+    new ChartSeries() { Name = "Renewable", Data = new double[] { 10, 41, 35, 51, 49, 62, 69, 91, 148 } },
+};
+
+    public string[] XAxisLabels = { "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep" };
+    //End graph
+}
+
